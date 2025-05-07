@@ -118,7 +118,7 @@ def validate_api_key(key: str) -> Tuple[bool, str]:
 def run_config_wizard() -> None:
     """Interactive API key configuration with validation"""
     setup_config()
-    print(f"\n🔧 Terapilot Configuration ({CONFIG_FILE})")
+    print(f"\n🔧 Terapilot Configuration")
     
     try:
         current_key = load_config()
@@ -129,7 +129,7 @@ def run_config_wizard() -> None:
         current_key = None
     
     while True:
-        print("\nEnter new Cohere API key (typing will be hidden):")
+        print("\nEnter new Cohere API key:")
         print("(Press Ctrl+C to cancel or leave blank to keep current)")
         new_key = getpass.getpass(prompt="> ").strip()
         
@@ -161,7 +161,7 @@ def run_config_wizard() -> None:
         # Overwrite memory
         new_key = 'x' * len(new_key)
         
-        print(f"\n✅ Configuration saved to {CONFIG_FILE}")
+        print(f"\n✅ Configuration saved")
         print("Note: Environment variables take precedence over this file")
         break
 
@@ -169,9 +169,9 @@ def remove_config() -> None:
     """Remove the API key configuration"""
     if CONFIG_FILE.exists():
         CONFIG_FILE.unlink()
-        print(f"✅ Removed configuration file: {CONFIG_FILE}")
+        print(f"✅ Removed configuration file")
     else:
-        print(f"ℹ️ No configuration file found at {CONFIG_FILE}")
+        print(f"ℹ️ No configuration file found")
     print("Note: Environment variables may still be set")
 
 def show_help() -> None:
