@@ -18,7 +18,7 @@ CONFIG_FILE = CONFIG_DIR / "config.env"
 COHERE_SIGNUP_URL = "https://dashboard.cohere.com/signup"
 GITHUB_URL = "https://github.com/akhilesh2220/terapilot"
 SUPPORT_EMAIL = "akhileshs222000@gmail.com"
-VERSION = "1.0.0"
+VERSION = "1.0.2"
 
 def clean_command(output: str) -> str:
     """Sanitize the AI-generated command"""
