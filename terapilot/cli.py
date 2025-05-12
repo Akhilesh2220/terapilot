@@ -72,38 +72,47 @@ def load_config() -> str:
     sys.exit(1)
 
 def execute_command(command: str) -> int:
-    """Execute shell command with better error handling and sudo support"""
+    """Execute shell command with safety confirmation and terminal support"""
+    dangerous_patterns = [
+        r"\bsudo\b",
+        r"\brm\s+-rf\b",
+        r"\bshutdown\b",
+        r"\breboot\b",
+        r"\bmkfs\b",
+        r"\bdd\b",
+        r"\binit\s+[06]\b",
+        r":\s*!",
+    ]
+
+    is_dangerous = any(re.search(pattern, command, re.IGNORECASE) for pattern in dangerous_patterns)
+
+    if is_dangerous:
+        print(f"\n⚠️ Warning: This command may be dangerous:\n    {command}")
+        confirm = input("❓ Are you sure you want to run it? [y/N]: ").strip().lower()
+        if confirm != 'y':
+            print("🛑 Command cancelled")
+            return 1
+
     try:
-        if "sudo" in command.lower():
-            # Run in interactive mode for sudo (allows password prompt)
-            print("\n⚠️ Running 'sudo' command - enter password if prompted:")
-            result = subprocess.run(
-                command,
-                shell=True,
-                check=False,
-                # Use stdin from terminal for password input
-                stdin=sys.stdin,
-                stdout=sys.stdout,
-                stderr=sys.stderr,
-            )
-        else:
-            # Non-interactive mode (captures output)
-            result = subprocess.run(
-                command,
-                shell=True,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            if result.stdout:
-                print(result.stdout)
-            if result.stderr:
-                print(f"⚠️ {result.stderr}", file=sys.stderr)
-        
+        # Use interactive mode for all commands
+        result = subprocess.run(
+            command,
+            shell=True,
+            check=False,
+            stdin=sys.stdin,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
         return result.returncode
+    except KeyboardInterrupt:
+        print("\n🚫 Command interrupted by user")
+        return 130  # Standard code for Ctrl+C
     except Exception as e:
         print(f"🚨 Command execution failed: {str(e)}", file=sys.stderr)
         return 1
+
+
+
 
 def validate_api_key(key: str) -> Tuple[bool, str]:
     """Check if API key is valid by making a test call to Cohere"""
