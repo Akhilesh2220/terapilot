@@ -18,7 +18,7 @@ CONFIG_FILE = CONFIG_DIR / "config.env"
 COHERE_SIGNUP_URL = "https://dashboard.cohere.com/signup"
 GITHUB_URL = "https://github.com/akhilesh2220/terapilot"
 SUPPORT_EMAIL = "akhileshs222000@gmail.com"
-VERSION = "1.0.2"
+VERSION = "1.0.4"
 
 def clean_command(output: str) -> str:
     """Sanitize the AI-generated command"""
@@ -46,26 +46,14 @@ def setup_config() -> None:
     CONFIG_FILE.chmod(0o600)  # Restrict to owner only
 
 def load_config() -> str:
-    """Load API key with proper precedence"""
-    # 1. Check environment variable
-    if "COHERE_API_KEY" in os.environ:
-        return os.environ["COHERE_API_KEY"]
-    
-    # 2. Check config files
-    config_paths = [
-        CONFIG_FILE,
-        Path(".env"),
-        Path(__file__).parent.parent / ".env"
-    ]
-    
-    for path in config_paths:
-        if path.exists():
-            load_dotenv(path, override=True)
-            if "COHERE_API_KEY" in os.environ:
-                return os.environ["COHERE_API_KEY"]
-    
-    # 3. No key found
-    print("\n🔴 Error: No API key configured", file=sys.stderr)
+    """Load API key strictly from the config file"""
+    if CONFIG_FILE.exists():
+        for line in CONFIG_FILE.read_text().splitlines():
+            if line.strip().startswith("COHERE_API_KEY="):
+                key = line.partition("=")[2].strip().strip("'").strip('"')
+                if key:
+                    return key
+    print("\n🔴 Error: No API key configured in file", file=sys.stderr)
     print("To get started:", file=sys.stderr)
     print(f"1. Get a free API key: {COHERE_SIGNUP_URL}", file=sys.stderr)
     print("2. Configure with: terapilot --config", file=sys.stderr)
@@ -184,7 +172,7 @@ def run_config_wizard() -> None:
         new_key = 'x' * len(new_key)
         
         print(f"\n✅ Configuration saved")
-        print("Note: Environment variables take precedence over this file")
+
         break
 
 def remove_config() -> None:
