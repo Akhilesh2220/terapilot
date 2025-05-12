@@ -72,21 +72,34 @@ def load_config() -> str:
     sys.exit(1)
 
 def execute_command(command: str) -> int:
-    """Execute shell command with better error handling"""
+    """Execute shell command with better error handling and sudo support"""
     try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            check=False,
-            capture_output=True,
-            text=True
-        )
+        if "sudo" in command.lower():
+            # Run in interactive mode for sudo (allows password prompt)
+            print("\n⚠️ Running 'sudo' command - enter password if prompted:")
+            result = subprocess.run(
+                command,
+                shell=True,
+                check=False,
+                # Use stdin from terminal for password input
+                stdin=sys.stdin,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+            )
+        else:
+            # Non-interactive mode (captures output)
+            result = subprocess.run(
+                command,
+                shell=True,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            if result.stdout:
+                print(result.stdout)
+            if result.stderr:
+                print(f"⚠️ {result.stderr}", file=sys.stderr)
         
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(f"⚠️ {result.stderr}", file=sys.stderr)
-            
         return result.returncode
     except Exception as e:
         print(f"🚨 Command execution failed: {str(e)}", file=sys.stderr)
@@ -246,3 +259,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
